@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🍿 Plex Re-View
+<img src="public/logo.svg" width="120" alt="Plex Re-View logo">
+
+# Plex Re-View
 
 **Your year on Plex, re-viewed.** A Spotify Wrapped-style recap for everyone on your Plex server,<br>
 with a cinema-themed scrolling page, a server leaderboard, data stats and a shareable card.
