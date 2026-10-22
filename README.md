@@ -252,6 +252,10 @@ Plex Re-View was inspired by these great projects:
 - [plex-rewind](https://github.com/RaunoT/plex-rewind) by RaunoT
 - [Wrapperr](https://github.com/aunefyren/wrapperr) by aunefyren
 
+## 📄 License
+
+[MIT](LICENSE): free to use, change and share, also commercially, as long as the copyright notice is kept.
+
 ---
 
 <sub>Not affiliated with or endorsed by Plex Inc. or Tautulli. Plex is a trademark of Plex Inc.</sub>

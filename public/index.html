@@ -38,9 +38,10 @@ b{color:var(--fg)}
 @media (max-width:1100px){.strip{opacity:.4}}
 @media (max-width:760px){.strip{opacity:.3}.strip.left{left:-80px}.strip.right{right:-80px}}
 .floor{position:absolute;inset:auto 0 0;height:42vh;background:linear-gradient(transparent,rgba(0,0,0,.88) 70%)}
-.seats{position:absolute;left:-5%;right:-5%;bottom:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'%3E%3Cpath d='M0 44h11v26H0zM89 44h11v26H89z' fill='%2303030a'/%3E%3Cpath d='M15 70V26C15 14 23 7 35 7h30c12 0 20 7 20 19v44z' fill='%2305050c' stroke='rgba(160,205,255,.32)' stroke-width='1.4'/%3E%3Cpath d='M22 26c0-8 6-12 14-12h28c8 0 14 4 14 12' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='6'/%3E%3C/svg%3E") repeat-x}
-.seats.back{bottom:60px;height:46px;background-size:66px 46px;opacity:.7}
-.seats.front{height:80px;background-size:114px 80px;background-position:57px 0}
+/* red velvet cinema seats: wide, tufted, joined by armrests */
+.seats{position:absolute;left:-5%;right:-5%;bottom:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 64'%3E%3Cdefs%3E%3ClinearGradient id='v' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23861a2c'/%3E%3Cstop offset='.55' stop-color='%234a0a17'/%3E%3Cstop offset='1' stop-color='%23180308'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 36q0-4 4-4h6v32H0z' fill='%23140409'/%3E%3Cpath d='M110 32h6q4 0 4 4v28h-10z' fill='%23140409'/%3E%3Cpath d='M12 64V24Q12 10 26 10h68q14 0 14 14v40z' fill='url(%23v)'/%3E%3Cpath d='M16 22Q17 14 26 14h68q9 0 10 8' fill='none' stroke='rgba(255,140,160,.45)' stroke-width='1.5'/%3E%3Cpath d='M46 20v40M74 20v40' stroke='rgba(0,0,0,.35)' stroke-width='2'/%3E%3C/svg%3E") repeat-x}
+.seats.back{bottom:54px;height:44px;background-size:83px 44px;filter:brightness(.6)}
+.seats.front{height:72px;background-size:135px 72px;background-position:67px 0}
 .aisle{position:absolute;inset:auto 0 54px;height:6px;background:radial-gradient(circle,#ffb547 0 1.5px,transparent 2.5px) 0 50%/44px 6px repeat-x;filter:drop-shadow(0 0 4px #ffb547);animation:flicker 9s steps(1) infinite}
 .grain{position:absolute;inset:-50%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.07;animation:grain .9s steps(5) infinite}
 @keyframes grain{20%{transform:translate(-5%,3%)}40%{transform:translate(4%,-6%)}60%{transform:translate(-3%,5%)}80%{transform:translate(6%,2%)}}
