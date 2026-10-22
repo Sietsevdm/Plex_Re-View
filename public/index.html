@@ -95,7 +95,7 @@ h2{font-size:clamp(1.5rem,6vw,2.4rem);line-height:1.15}
 .list li{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(8px)}
 .list .rank{font-family:Orbitron;color:var(--c1);width:1.4em;text-align:center}
 .list li:first-child .rank{color:var(--plex)}
-.list img{width:36px;height:54px;object-fit:cover;border-radius:6px;flex:none}
+.list img{width:56px;height:84px;object-fit:cover;border-radius:8px;flex:none;box-shadow:0 6px 18px -6px rgba(255,43,214,.45)}
 .list .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list .v{color:var(--muted);font-size:.85rem;white-space:nowrap}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%}
@@ -140,8 +140,9 @@ select option{background:#111}
 .tab:focus-visible,#menu a:focus-visible{outline:2px solid var(--c1);outline-offset:3px}
 .list .t small{display:block;color:var(--muted);font-size:.78rem;overflow:hidden;text-overflow:ellipsis}
 .list li.me{border-color:var(--plex);box-shadow:0 0 22px -4px rgba(229,160,13,.6)}
-.list img.round{width:40px;height:40px;border-radius:50%}
-.list .ph{width:36px;flex:none}
+.list img.round{width:40px;height:40px;border-radius:50%;box-shadow:none}
+.list .ph{width:56px;flex:none}
+.list .ph.round{width:40px}
 .btn.mini{padding:8px 14px;font-size:.68rem;text-decoration:none}
 h2.sub{font-size:.85rem;letter-spacing:.25em;text-transform:uppercase;color:var(--c1);margin-top:14px}
 
@@ -386,7 +387,7 @@ const bars = (arr, labels) => {
 const poster = thumb => thumb ? `<div class="pw r"><img class="poster" src="${img(thumb)}" alt="" onerror="this.remove()"></div>` : '';
 const medal = i => ['🥇', '🥈', '🥉'][i] || i + 1;
 const rows = items => items.length ? `<ol class="list">${items.map((x, i) => `<li class="r${x.me ? ' me' : ''}"><b class="rank">${medal(i)}</b>${x.img
-  ? `<img${x.round ? ' class="round"' : ''} src="${esc(x.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="ph"></span>'}<span class="t">${esc(x.title)}${x.sub ? `<small>${esc(x.sub)}</small>` : ''}</span><span class="v">${x.value}</span>${x.action || ''}</li>`).join('')}</ol>`
+  ? `<img${x.round ? ' class="round"' : ''} src="${esc(x.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="ph${x.round ? ' round' : ''}"></span>`}<span class="t">${esc(x.title)}${x.sub ? `<small>${esc(x.sub)}</small>` : ''}</span><span class="v">${x.value}</span>${x.action || ''}</li>`).join('')}</ol>`
   : '<p class="muted r">Nothing here yet. Suspiciously quiet.</p>';
 const titleRows = (items, sub) => rows(items.map(x => ({ img: x.thumb && img(x.thumb), title: x.title, sub: sub?.(x), value: `${hrs(x.seconds)} h` })));
 const plural = (n, w) => `${n.toLocaleString(LOCALE)} ${w}${n === 1 ? '' : 's'}`;
