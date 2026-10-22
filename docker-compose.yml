@@ -1,6 +1,7 @@
 services:
   plex-review:
     build: .
+    pull_policy: build   # rebuild on every deploy, so "Pull and redeploy" really runs the new code
     image: plex-review:latest
     container_name: plex-review
     restart: unless-stopped

@@ -75,16 +75,39 @@ Server totals, watch time per month, devices, every user (including the ones who
   </tr>
 </table>
 
+## 📋 Requirements
+
+- **Docker** (standalone, not Swarm), optionally with **Portainer** CE 2.x
+- **Plex Media Server**
+- **Tautulli** connected to that Plex server, with its API enabled
+- **Plex Pass**, only for the Data page (Plex keeps bandwidth statistics only for Plex Pass servers)
+- Viewers need a Plex account that has access to your server
+
 ## 🚀 Deploy with Portainer
 
-**You need:** Docker with Portainer, a Plex server, and Tautulli connected to it. For the Data page you also need Plex Pass.
+1. Collect your settings first. See [Finding your settings](#-finding-your-settings) below.
+2. In Portainer, go to **Stacks → Add stack** and give it a name, e.g. `plex-review`.
+3. Choose **Repository** as the build method and fill in:
+   - **Repository URL:** `https://github.com/Sietsevdm/Plex_Re-View`
+   - **Repository reference:** `refs/heads/main`
+   - **Compose path:** `docker-compose.yml`
+4. Under **Environment variables**, add your settings one by one, or switch to **Advanced mode** and paste them in `.env` format:
+   ```
+   TAUTULLI_URL=https://tautulli.example.com
+   TAUTULLI_API_KEY=your-tautulli-api-key
+   SESSION_SECRET=a-long-random-string
+   TZ=Europe/Amsterdam
+   PLEX_URL=https://plex.example.com
+   PLEX_TOKEN=your-plex-token
+   ```
+5. Click **Deploy the stack**. Portainer downloads the code and builds the image (the first time takes a minute).
+6. Open `http://<your-docker-host>:8080` and sign in with Plex.
 
-1. In Portainer go to **Stacks → Add stack → Repository**.
-2. Repository URL: `https://github.com/Sietsevdm/Plex_Re-View`, compose path: `docker-compose.yml`.
-3. Under **Environment variables**, add at least `TAUTULLI_URL`, `TAUTULLI_API_KEY` and `SESSION_SECRET` (see Configuration below).
-4. Click **Deploy the stack** and open `http://<your-docker-host>:8080`.
+If a required setting is missing, the deploy stops with a message like *"required variable TAUTULLI_URL is missing a value"*.
 
-Portainer builds the image from the repo. To update later, use **Pull and redeploy** on the stack.
+### Updating
+
+Open the stack in Portainer and click **Pull and redeploy**. The image is rebuilt from the latest code on every deploy. If you'd like updates to happen automatically, turn on **GitOps updates** on the stack.
 
 ### Or with plain Docker Compose
 
@@ -92,23 +115,59 @@ Portainer builds the image from the repo. To update later, use **Pull and redepl
 git clone https://github.com/Sietsevdm/Plex_Re-View.git
 cd Plex_Re-View
 cp .env.example .env   # then fill in your values
-docker compose up -d --build
+docker compose up -d
 ```
+
+To update later: `git pull && docker compose up -d`.
 
 ## ⚙️ Configuration
 
 | Variable | Required | What it does |
 |---|---|---|
-| `TAUTULLI_URL` | ✅ | How the container reaches Tautulli, e.g. `http://192.168.1.10:8181`. Include a base URL such as `/tautulli` if you use one. In the same Docker network `http://tautulli:8181` works. |
-| `TAUTULLI_API_KEY` | ✅ | Tautulli → Settings → Web Interface → API key |
-| `SESSION_SECRET` | ✅ | Any long random string. Signs the login cookies; changing it logs everyone out. |
-| `TZ` | | Time zone for peak hours, days and streaks. Default `Europe/Amsterdam`. |
+| `TAUTULLI_URL` | ✅ | How the container reaches Tautulli. Include a base URL such as `/tautulli` if you use one. |
+| `TAUTULLI_API_KEY` | ✅ | Tautulli's API key. |
+| `SESSION_SECRET` | ✅ | A long random string you make up. Signs the login cookies. |
+| `TZ` | | Time zone for peak hours, days and streaks, e.g. `Europe/Amsterdam` ([list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)). Default `Europe/Amsterdam`. |
 | `PORT` | | Port on the Docker host. Default `8080`. |
-| `PLEX_URL` | | Your Plex server, e.g. `http://192.168.1.10:32400`. Enables the Data page and "added this year". |
-| `PLEX_TOKEN` | | The server owner's [X-Plex-Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). Stays on the server, never sent to browsers. |
-| `ADMIN_USERS` | | Extra admins: Plex usernames, comma-separated. The server owner is always admin. |
+| `PLEX_URL` | | Your Plex server. Enables the Data page and the "added this year" record. |
+| `PLEX_TOKEN` | | The server owner's Plex token. Needed together with `PLEX_URL`. |
+| `ADMIN_USERS` | | Extra admins: Plex usernames (not emails), comma-separated. The server owner is always admin. |
 
-**Behind a reverse proxy with HTTPS?** Make sure it sends `X-Forwarded-Proto: https` so the login cookie is marked `Secure`.
+### 🔑 Finding your settings
+
+**`TAUTULLI_URL`**: the address you open Tautulli on, as seen **from the Docker host** (not from your laptop).
+- Same machine or network: something like `http://192.168.1.10:8181`
+- Same Docker network: `http://tautulli:8181` (the container name)
+- Hosted somewhere else (a seedbox, VPS or Appbox): use its `https://` address
+- Running Tautulli under a sub-path? Include it: `https://example.com/tautulli`
+
+To test it, open this in a browser. It should answer with `"result": "success"` and your server's name:
+`<TAUTULLI_URL>/api/v2?apikey=<TAUTULLI_API_KEY>&cmd=get_server_friendly_name`
+
+**`TAUTULLI_API_KEY`**: in Tautulli go to **Settings → Web Interface**, scroll to **API**, tick **Enable API**, save, and copy the **API key**.
+
+**`SESSION_SECRET`**: you don't look this up anywhere; you make it up. Nobody ever has to type it. Any long random string works. Generate one:
+- Windows (PowerShell): `-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 48 | ForEach-Object { [char]$_ })`
+- Linux / macOS: `openssl rand -hex 32`
+
+Keep it the same afterwards: changing it logs everyone out (they just sign in again).
+
+**`PLEX_URL`**: the address of your Plex Media Server, as seen from the Docker host.
+- Plex on your own network: `http://192.168.1.10:32400`
+- Plex hosted elsewhere (seedbox, Appbox, VPS) or behind a reverse proxy: use the **`https://`** address. Avoid plain `http://` over the internet, because your Plex token travels along with every request.
+
+To test it, open `<PLEX_URL>/identity`. A working Plex address shows a small response with a `machineIdentifier`.
+
+**`PLEX_TOKEN`**: must belong to the **server owner's** Plex account.
+1. Open Plex Web and sign in as the owner.
+2. Open any movie or episode, click **⋯ → Get Info → View XML**.
+3. The address of the page that opens ends with `X-Plex-Token=...`. Everything after the `=` is your token.
+
+Plex explains it here as well: [Finding an authentication token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). Treat the token like a password: it gives full access to your Plex server.
+
+### Reverse proxy and HTTPS
+
+Plex Re-View listens on port `8080` over plain HTTP. To reach it from outside your home, put it behind a reverse proxy with HTTPS (Nginx Proxy Manager, Traefik, Caddy, …) and make sure the proxy sends `X-Forwarded-Proto: https`, so the login cookie is marked `Secure`. Plex sign-in works on any address, so no extra Plex configuration is needed.
 
 ## 🔍 How it works
 
@@ -119,14 +178,53 @@ Browser ──► Plex Re-View (Node, one container) ──► Tautulli API   (w
 ```
 
 - **`public/index.html`**: the entire frontend in one HTML5 file (HTML, CSS and plain JavaScript).
-- **`server.js`**: a small Node server with **zero npm dependencies**. It handles the Plex sign-in, keeps your API key and token server-side, proxies posters and caches Tautulli answers for 10 minutes.
+- **`server.js`**: a small Node server with **zero npm dependencies**. It handles the Plex sign-in, keeps your API key and token server-side, proxies posters and caches answers.
 - **`stats.js`**: turns raw watch history into the yearly stats. Covered by tests (`npm test`).
+- **`dev/demo.js`**: a fake Tautulli and Plex for trying the app without a real server.
 
-### Privacy
-- Users sign in with Plex. Only accounts that exist in Tautulli (people you share your server with) get in.
-- Your Tautulli API key and Plex token never reach the browser. Posters go through the app's image proxy.
-- Everyone signed in can see the leaderboard, including names, hours, favourite titles and taste twins. Data totals are for the whole server, never per person.
-- Sessions are signed cookies; nothing is stored on disk.
+Good to know:
+- Stats are calculated from Tautulli's watch history, so they go back as far as Tautulli has been running. The year picker shows the last five years.
+- Answers are cached for 10 minutes (server records for 30). Admins can click **Refresh data from Tautulli** on the Admin page to clear the cache straight away.
+- The first page load after a (re)start is slower, because a whole year of history is fetched once.
+- Plex Re-View only **reads** from Tautulli and Plex; it never changes anything.
+- Movies and TV shows only; music is not included.
+
+### Privacy and security
+- Users sign in with Plex. Only accounts that exist in Tautulli (people you share your server with) get in; anyone else sees *"you're not on this server's guest list"*.
+- Your Tautulli API key and Plex token never reach the browser. Posters go through the app's own image proxy, and only for signed-in users.
+- Everyone signed in can see the leaderboard, including names, hours, favourite titles and taste twins.
+- The Data page shows **server totals only**, never per person, and counts **remote streams only**. Watching on your own home network doesn't count. If your Plex is hosted elsewhere (seedbox, Appbox), practically every stream is remote.
+- Sessions are signed cookies, valid for 30 days. Nothing is stored on disk.
+- Never commit your `.env` file. It's already in `.gitignore`.
+
+## 🛠️ Troubleshooting
+
+| What you see | What to do |
+|---|---|
+| Deploy fails: *"required variable … is missing a value"* | Add that variable under the stack's Environment variables. |
+| *"Sorry …, you're not on this server's guest list"* | That Plex account isn't a user in Tautulli. In Tautulli, open **Users** and refresh the user list, then sign in again. |
+| *"Login expired, try again"* | The sign-in took longer than 15 minutes, or cookies are blocked. Click **Sign in with Plex** again. |
+| No **Admin** item in the menu | Admin is the server owner according to Tautulli. Add your Plex username to `ADMIN_USERS` and redeploy. |
+| *"Something broke. Check the server logs."* | Open the container's logs in Portainer. Usually `TAUTULLI_URL` or `TAUTULLI_API_KEY` is wrong; test them with the link in [Finding your settings](#-finding-your-settings). |
+| Posters are empty frames | Tautulli can't fetch artwork from Plex. Check Tautulli's own Plex connection (Settings → Plex Media Server). |
+| Data page: *"Streamed data isn't set up yet"* | Add `PLEX_URL` and `PLEX_TOKEN`. |
+| Data page: *"Plex refused the bandwidth statistics"* | The token isn't the owner's, or the server has no Plex Pass. Check that `<PLEX_URL>/identity` works. |
+| Data page shows little or no data | Plex keeps bandwidth history for a limited time, and only remote streams count. |
+| A server record card is missing | That part couldn't be fetched (for example on an older Tautulli version). The other cards still work. |
+| Peak hours or days are off | Set `TZ` to your time zone. |
+| New plays don't show up yet | Data is cached for 10 minutes. Wait, or use **Refresh data from Tautulli** on the Admin page. |
+
+## ❓ FAQ
+
+**Is the Data page per user?** No. It's the whole server's total of remote streams, split per year.
+
+**Does it work for previous years?** Yes, use the year picker on your Re-View, the leaderboard or the Admin page. It goes back as far as your Tautulli history does.
+
+**Can users see each other's stats?** On the leaderboard, yes: names, hours, top titles and transcode percentages. Someone's full Re-View is only visible to themselves and to admins.
+
+**Do I need Plex Pass?** Only for the Data page and the "added this year" record. Everything else works without it.
+
+**Can I change the port?** Set `PORT`, e.g. `PORT=8095`, and open `http://<host>:8095`.
 
 ## 🧪 Try it locally
 
@@ -138,13 +236,13 @@ npm run demo
 
 Open http://localhost:8181 and pick who to log in as (the demo skips the Plex sign-in; Sietse is the admin). The demo is not included in the Docker image.
 
-Against your real Tautulli:
+Against your real Tautulli (and optionally Plex), without Docker:
 
 ```bash
 TAUTULLI_URL=http://192.168.1.10:8181 TAUTULLI_API_KEY=xxx SESSION_SECRET=dev node server.js
 ```
 
-Requires Node 20 or newer. Run the tests with `npm test`.
+Then open http://localhost:8080. Plex sign-in works on localhost too. Requires Node 20 or newer. Run the tests with `npm test`.
 
 ## 🙏 Inspiration
 
