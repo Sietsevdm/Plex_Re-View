@@ -461,6 +461,7 @@ function serverRecords(rec) {
 
 function showData({ bandwidth: d, bandwidthError, records: rec }) {
   const max = d ? Math.max(...d.years.map(y => y.bytes), 0) : 0;
+  const years = d ? [...d.years].reverse() : []; // oldest left, newest right
   const since = d?.since ? new Date(d.since * 1000).toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }) : '';
   const facts = (list, title, intro = '') => list.length ? `<h2 class="sub r">${title}</h2>${intro}<div class="facts">${list.map(([ico, n, text]) => `<div class="fact r"><div class="ico">${ico}</div><b>${n}</b><p>${text}</p></div>`).join('')}</div>` : '';
   show([{ hue: 300, page: true, html: `
@@ -470,8 +471,8 @@ function showData({ bandwidth: d, bandwidthError, records: rec }) {
     <div class="databox r"><p class="kicker">Total streamed outside your home${since ? ` since ${since}` : ''}</p>
       <div class="num">${bigBytes(d.bytes)}</div>${allUnits(d.bytes)}</div>
     <h2 class="sub r">Per year</h2>
-    ${d.years.length > 1 ? bars([...d.years].reverse().map(y => y.bytes), [...d.years].reverse().map(y => y.year)) : ''}
-    <div class="cards">${d.years.map(y => `<div class="card r${y.bytes === max ? ' top' : ''}"><span>${y.year}${y.bytes === max && d.years.length > 1 ? ' · busiest' : ''}</span><b>${bigBytes(y.bytes)}</b><small>${num(y.bytes / 4.7e9)} DVDs</small></div>`).join('')}</div>
+    ${years.length > 1 ? bars(years.map(y => y.bytes), years.map(y => y.year)) : ''}
+    <div class="cards">${years.map(y => `<div class="card r${y.bytes === max ? ' top' : ''}"><span>${y.year}${y.bytes === max && d.years.length > 1 ? ' · busiest' : ''}</span><b>${bigBytes(y.bytes)}</b><small>${num(y.bytes / 4.7e9)} DVDs</small></div>`).join('')}</div>
     ${facts(dataFacts(d.bytes), 'Fun facts', '<p class="muted r">All of that data, put in perspective:</p>')}`
     : '<p class="muted r">Plex has no remote streaming stats yet. Everyone is watching from the couch at home, apparently.</p>'}
     ${facts(serverRecords(rec), 'Server records')}` }]);
