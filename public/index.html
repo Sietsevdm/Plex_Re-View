@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05060d">
+<title>Plex Re-View</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305060d'/%3E%3Cpath d='M11 7h6l7 9-7 9h-6l7-9z' fill='%23e5a00d'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05060d;--fg:#eef0ff;--muted:#959bc8;--plex:#e5a00d;--c1:#22e3ff;--c2:#ff2bd6;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.12);--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--fg);font:16px/1.5 'Space Grotesk',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+body{overflow-x:hidden}
+b{color:var(--fg)}
+
+/* background: a dark cinema - screen glow, dust, film strips with real posters, rows of seats, film grain */
+.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;background:radial-gradient(120% 70% at 50% 0%,#10122a,var(--bg) 65%)}
+.tint{position:absolute;inset:0;filter:hue-rotate(var(--hue,0deg));transition:filter 1.4s var(--ease)}
+.glow{position:absolute;left:50%;top:-34vh;width:150vw;height:75vh;translate:-50% 0;background:radial-gradient(closest-side,rgba(34,227,255,.38),rgba(255,43,214,.16) 55%,transparent)}
+@keyframes flicker{0%,100%{opacity:1}12%{opacity:.82}14%{opacity:1}47%{opacity:.9}49%{opacity:.7}51%{opacity:1}80%{opacity:.88}}
+.dust{position:absolute;inset:0}
+.dust i{position:absolute;bottom:-10px;left:var(--x);width:var(--z);height:var(--z);border-radius:50%;background:#fff3d6;box-shadow:0 0 6px #ffe2a0;opacity:0;animation:dust var(--t) linear var(--d) infinite}
+@keyframes dust{10%{opacity:.75}85%{opacity:.4}100%{opacity:0;transform:translate(var(--dx),-112vh)}}
+.strip{position:absolute;top:-25%;height:150%;width:150px;overflow:hidden;background:#121320;box-shadow:0 0 50px rgba(0,0,0,.85);opacity:.8}
+.strip.left{left:2vw;rotate:4deg}
+.strip.right{right:2vw;rotate:-4deg}
+.track{translate:0 calc(var(--py,0) * -1px)}
+.reel{display:flex;flex-direction:column;animation:roll 70s linear infinite;
+  background:linear-gradient(transparent 0 8px,var(--bg) 8px 20px,transparent 20px 28px) 8px 0/12px 28px repeat-y,
+    linear-gradient(transparent 0 8px,var(--bg) 8px 20px,transparent 20px 28px) calc(100% - 8px) 0/12px 28px repeat-y}
+.strip.right .reel{animation-direction:reverse}
+/* 141px poster + 27px margin = 168px per frame, a multiple of the 28px sprocket pitch, so the loop is seamless */
+.reel i{display:block;flex:none;width:94px;height:141px;margin:13.5px auto;border-radius:3px;background:var(--img,none) center/cover,linear-gradient(rgba(34,227,255,.18),rgba(255,43,214,.16));filter:saturate(.85) brightness(.8)}
+@keyframes roll{to{translate:0 calc(-100% / 3)}}
+@media (max-width:1100px){.strip{opacity:.4}}
+@media (max-width:760px){.strip{opacity:.3}.strip.left{left:-80px}.strip.right{right:-80px}}
+.floor{position:absolute;inset:auto 0 0;height:42vh;background:linear-gradient(transparent,rgba(0,0,0,.88) 70%)}
+.seats{position:absolute;left:-5%;right:-5%;bottom:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'%3E%3Cpath d='M0 44h11v26H0zM89 44h11v26H89z' fill='%2303030a'/%3E%3Cpath d='M15 70V26C15 14 23 7 35 7h30c12 0 20 7 20 19v44z' fill='%2305050c' stroke='rgba(160,205,255,.32)' stroke-width='1.4'/%3E%3Cpath d='M22 26c0-8 6-12 14-12h28c8 0 14 4 14 12' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='6'/%3E%3C/svg%3E") repeat-x}
+.seats.back{bottom:60px;height:46px;background-size:66px 46px;opacity:.7}
+.seats.front{height:80px;background-size:114px 80px;background-position:57px 0}
+.aisle{position:absolute;inset:auto 0 54px;height:6px;background:radial-gradient(circle,#ffb547 0 1.5px,transparent 2.5px) 0 50%/44px 6px repeat-x;filter:drop-shadow(0 0 4px #ffb547);animation:flicker 9s steps(1) infinite}
+.grain{position:absolute;inset:-50%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.07;animation:grain .9s steps(5) infinite}
+@keyframes grain{20%{transform:translate(-5%,3%)}40%{transform:translate(4%,-6%)}60%{transform:translate(-3%,5%)}80%{transform:translate(6%,2%)}}
+.scratch{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.35);opacity:0;animation:scratch 11s steps(1) infinite}
+@keyframes scratch{0%{left:22%;opacity:0}3%{opacity:.6}4%{left:23%}6%{opacity:0}48%{left:71%;opacity:.45}50%{left:70%}51%{opacity:0}}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 45%,rgba(0,0,0,.75))}
+
+/* scroll progress */
+#prog{position:fixed;top:0;left:0;width:100%;height:3px;z-index:8;transform-origin:left;transform:scaleX(var(--p,0));background:linear-gradient(90deg,var(--c1),var(--c2),var(--plex));box-shadow:0 0 10px var(--c1)}
+
+/* sections + reveal-on-scroll */
+#stage{position:relative;z-index:2;overflow-x:clip} /* off-screen "slide in" items must not widen the page on phones */
+.sec{min-height:85svh;max-width:680px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:16px;padding:72px 16px}
+.sec:first-child{min-height:100svh}
+.sec:last-child{padding-bottom:130px}
+.sec.page{max-width:960px;min-height:100svh;justify-content:flex-start;align-items:stretch;text-align:left;padding-top:40px}
+.r{opacity:0;transform:translate(var(--x,0),var(--y,48px)) scale(var(--s,1)) rotate(var(--rot,0deg));filter:blur(8px);transition:opacity .9s var(--ease),transform 1.1s var(--ease),filter .9s var(--ease)}
+.r.in{opacity:1;transform:none;filter:none}
+.card.r,.summary.r{--y:30px;--s:.85}
+.pw.r{--s:.8;--rot:-6deg}
+.num.r,.year.r{--y:0px;--s:.6}
+.list li.r:nth-child(odd){--x:-70px;--y:0px}
+.list li.r:nth-child(even){--x:70px;--y:0px}
+.bob{display:inline-block;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(7px)}}
+
+/* type */
+h1,h2,.num,.kicker,.year,.card b{font-family:Orbitron,sans-serif}
+.kicker{text-transform:uppercase;letter-spacing:.3em;font-size:.75rem;color:var(--c1);text-shadow:0 0 12px rgba(34,227,255,.6)}
+h2{font-size:clamp(1.5rem,6vw,2.4rem);line-height:1.15}
+.hl{color:var(--plex);text-shadow:0 0 18px rgba(229,160,13,.55)}
+.num{font-size:clamp(3.5rem,18vw,7rem);font-weight:900;line-height:1;background:linear-gradient(120deg,var(--c1),var(--fg) 45%,var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 24px rgba(34,227,255,.35))}
+.num small{display:block;margin-top:10px;font-size:max(.75rem,.16em);font-weight:500;letter-spacing:.35em;text-transform:uppercase;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+.quip{font-style:italic;color:var(--plex);max-width:34ch;font-size:1.05rem}
+.quip::before{content:'» ';font-style:normal}
+.muted,.hint{color:var(--muted)}.hint{font-size:.8rem;margin-top:10px}
+.err{color:#ff6b8b;min-height:1.5em}
+.logo{font-size:clamp(2.1rem,11vw,4.2rem);font-weight:900;letter-spacing:.04em;line-height:1.05}
+.year{font-size:clamp(4rem,24vw,9rem);font-weight:900;line-height:1;color:transparent;-webkit-text-stroke:2px var(--c1);filter:drop-shadow(0 0 18px rgba(34,227,255,.5))}
+.glitch{position:relative;display:inline-block;color:var(--plex);text-shadow:0 0 18px rgba(229,160,13,.6)}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;inset:0;opacity:0}
+.glitch::before{color:var(--c1);clip-path:inset(0 0 58% 0);animation:gl 3.2s steps(1) infinite}
+.glitch::after{color:var(--c2);clip-path:inset(52% 0 0 0);animation:gl 2.6s steps(1) infinite reverse}
+@keyframes gl{0%,84%,100%{opacity:0;transform:none}86%{opacity:.9;transform:translate(-4px,1px)}90%{opacity:.9;transform:translate(4px,-2px)}94%{opacity:.9;transform:translate(-2px,2px)}}
+
+/* bits */
+.avatar{width:88px;height:88px;border-radius:50%;border:3px solid var(--c1);object-fit:cover;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(34,227,255,.12),0 0 40px rgba(255,43,214,.5)}}
+.poster{display:block;width:min(44vw,200px);aspect-ratio:2/3;object-fit:cover;border-radius:14px;border:1px solid var(--line);box-shadow:0 0 0 1px rgba(34,227,255,.35),0 24px 60px -12px rgba(255,43,214,.6);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px) rotate(-1.5deg)}}
+.list{list-style:none;padding:0;width:100%;display:grid;gap:8px;text-align:left}
+.list li{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(8px)}
+.list .rank{font-family:Orbitron;color:var(--c1);width:1.4em;text-align:center}
+.list li:first-child .rank{color:var(--plex)}
+.list img{width:36px;height:54px;object-fit:cover;border-radius:6px;flex:none}
+.list .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .v{color:var(--muted);font-size:.85rem;white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%}
+.card{padding:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(10px);text-align:center}
+.card b{display:block;font-size:1.7rem}
+.card span{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.15em}
+.card b span{color:inherit;font-size:inherit;text-transform:none;letter-spacing:normal} /* count-up numbers inside a card value */
+.card b small{font-size:.55em;margin-left:4px;color:var(--muted)}
+.card p{font-weight:700;margin:6px 0 2px}
+.card small{color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:150px;width:100%}
+.bar{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.bar i{display:block;width:100%;height:var(--h);min-height:2px;border-radius:3px 3px 0 0;background:linear-gradient(var(--c1),var(--c2));opacity:.75;transform-origin:bottom;transform:scaleY(0)}
+.bar.hi i{background:var(--plex);opacity:1;box-shadow:0 0 16px var(--plex)}
+.bar span{font-size:.65rem;color:var(--muted);min-height:1em;line-height:1}
+.bars.in .bar i{animation:grow .9s var(--ease) forwards;animation-delay:calc(var(--j) * 35ms + .3s)}
+@keyframes grow{to{transform:scaleY(1)}}
+.summary{width:100%;padding:18px;border-radius:22px;background:linear-gradient(var(--bg),var(--bg)) padding-box,linear-gradient(135deg,var(--c1),var(--c2),var(--plex)) border-box;border:2px solid transparent;display:grid;gap:10px;box-shadow:0 0 60px -10px rgba(255,43,214,.5)}
+.summary .row{display:flex;justify-content:space-between;gap:12px;text-align:left;font-size:.95rem}
+.summary .row span:last-child{font-weight:700;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn{text-decoration:none;font:700 .95rem Orbitron,sans-serif;letter-spacing:.1em;color:#111;background:linear-gradient(90deg,var(--plex),#ffd36b);border:0;border-radius:999px;padding:15px 30px;cursor:pointer;box-shadow:0 0 30px rgba(229,160,13,.5);transition:transform .2s var(--ease),box-shadow .2s}
+.btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 50px rgba(229,160,13,.85)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn:focus-visible,select:focus-visible{outline:2px solid var(--c1);outline-offset:3px}
+select{font:inherit;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:8px 14px;margin-left:8px}
+select option{background:#111}
+.loader{width:72px;height:72px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--c1);border-right-color:var(--c2);animation:spin 1s linear infinite;box-shadow:0 0 30px rgba(34,227,255,.3)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* menu + pages (leaderboard, admin) */
+#menu{position:fixed;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:4px;padding:5px;border-radius:999px;background:rgba(5,6,13,.75);border:1px solid var(--line);backdrop-filter:blur(12px);box-shadow:0 0 30px -8px rgba(34,227,255,.4)}
+#menu[hidden]{display:none}
+#menu a{color:var(--muted);text-decoration:none;font:600 .7rem Orbitron,sans-serif;letter-spacing:.08em;padding:10px 14px;border-radius:999px;white-space:nowrap;transition:color .3s,background .3s}
+#menu a.on{color:#111;background:linear-gradient(90deg,var(--c1),var(--c2))}
+.phead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.phead .logo{font-size:clamp(1.8rem,8vw,3rem)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px}
+.tab{font:600 .78rem Orbitron,sans-serif;letter-spacing:.08em;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:background .3s,color .3s,box-shadow .3s}
+.tab.on{color:#111;background:var(--c1);box-shadow:0 0 20px rgba(34,227,255,.5)}
+.tab:focus-visible,#menu a:focus-visible{outline:2px solid var(--c1);outline-offset:3px}
+.list .t small{display:block;color:var(--muted);font-size:.78rem;overflow:hidden;text-overflow:ellipsis}
+.list li.me{border-color:var(--plex);box-shadow:0 0 22px -4px rgba(229,160,13,.6)}
+.list img.round{width:40px;height:40px;border-radius:50%}
+.list .ph{width:36px;flex:none}
+.btn.mini{padding:8px 14px;font-size:.68rem;text-decoration:none}
+h2.sub{font-size:.85rem;letter-spacing:.25em;text-transform:uppercase;color:var(--c1);margin-top:14px}
+
+.databox{padding:28px 18px;border-radius:22px;text-align:center;display:grid;gap:10px;justify-items:center;background:linear-gradient(var(--bg),var(--bg)) padding-box,linear-gradient(135deg,var(--c1),var(--c2),var(--plex)) border-box;border:2px solid transparent;box-shadow:0 0 60px -10px rgba(255,43,214,.5)}
+.units{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.units span{font-size:.78rem;padding:4px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.fact{padding:18px;border-radius:16px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(10px)}
+.fact .ico{font-size:1.8rem;line-height:1}
+.fact b{display:block;font-family:Orbitron,sans-serif;font-size:1.5rem;margin:8px 0 4px;color:var(--plex)}
+.fact p{color:var(--muted);font-size:.9rem}
+.card.top{border-color:var(--plex);box-shadow:0 0 22px -4px rgba(229,160,13,.6)}
+
+.persona{font-size:5.5rem;line-height:1;filter:drop-shadow(0 0 30px rgba(229,160,13,.55))}
+.persona span{display:inline-block;animation:float 5s ease-in-out infinite}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="tint"><div class="glow"></div></div><div class="dust"></div>
+  <div class="strip left"><div class="track"><div class="reel"></div></div></div><div class="strip right"><div class="track"><div class="reel"></div></div></div>
+  <div class="floor"></div><div class="seats back"></div><div class="aisle"></div><div class="seats front"></div>
+  <div class="grain"></div><div class="scratch"></div><div class="vig"></div>
+</div>
+<div id="prog" aria-hidden="true"></div>
+<main id="stage" aria-live="polite"></main>
+<nav id="menu" hidden><a href="#" data-v="">My Re-View</a><a href="#leaderboard" data-v="leaderboard">Leaderboard</a><a href="#data" data-v="data">Data</a><a href="#admin" data-v="admin" hidden>Admin</a></nav>
+<script>
+const $ = s => document.querySelector(s);
+const LOCALE = 'en-GB'; // always English, whatever the browser language
+const stage = $('#stage'), prog = $('#prog');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const argmax = a => a.indexOf(Math.max(...a));
+const hrs = s => s < 36000 ? Math.round(s / 360) / 10 : Math.round(s / 3600);
+const img = p => '/api/img?src=' + encodeURIComponent(p);
+const count = v => `<span data-count="${v}" data-dec="${v % 1 ? 1 : 0}">0</span>`;
+const monthName = (m, style = 'long') => new Date(2024, m, 1).toLocaleDateString(LOCALE, { month: style });
+const dayName = d => new Date(2024, 0, 7 + d).toLocaleDateString(LOCALE, { weekday: 'long' }); // 7 Jan 2024 = Sunday
+const fmtDay = k => new Date(k + 'T12:00').toLocaleDateString(LOCALE, { weekday: 'long', month: 'long', day: 'numeric' });
+const fmtTs = t => new Date(t * 1000).toLocaleDateString(LOCALE, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+const glitch = '<span class="glitch" data-t="RE-VIEW">RE-VIEW</span>';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { 'content-type': 'application/json' } });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(j.error || res.statusText), { status: res.status });
+  return j;
+}
+
+// ---------- scroll engine ----------
+// Reveal elements as they scroll into view; things that appear together get a small stagger.
+const reveal = new IntersectionObserver(entries => {
+  entries.filter(e => e.isIntersecting).forEach((e, k) => {
+    const el = e.target;
+    el.style.transitionDelay = `${k * 90}ms`;
+    el.classList.add('in');
+    reveal.unobserve(el);
+    [el, ...el.querySelectorAll('[data-count]')].filter(x => x.dataset.count).forEach(countUp);
+  });
+}, { threshold: .15, rootMargin: '0px 0px -8% 0px' });
+// Background hue follows whichever section is in the middle of the screen.
+const hueWatch = new IntersectionObserver(entries => entries.forEach(e => {
+  if (e.isIntersecting) document.body.style.setProperty('--hue', e.target.style.getPropertyValue('--hue'));
+}), { rootMargin: '-50% 0px -50% 0px' });
+const progress = () => {
+  prog.style.setProperty('--p', scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight));
+  document.documentElement.style.setProperty('--py', (scrollY * .35) % (FRAMES * 168)); // film strips roll with the page
+};
+// Each reel = 3 identical copies of FRAMES posters; it loops by sliding exactly one copy.
+const FRAMES = 12;
+function fillReels(posters = {}) {
+  for (const side of ['left', 'right']) {
+    const list = posters[side] || [];
+    const copy = Array.from({ length: FRAMES }, (_, i) => list.length ? `<i style="--img:url('${img(list[i % list.length])}')"></i>` : '<i></i>').join('');
+    $(`.strip.${side} .reel`).innerHTML = copy.repeat(3);
+  }
+}
+fillReels();
+let postersLoaded = false;
+function loadPosters() { // only after sign-in: posters go through the authenticated image proxy
+  if (postersLoaded) return;
+  postersLoaded = true;
+  api('/api/leaderboard?year=' + year).then(lb => fillReels({
+    left: lb.shows.map(x => x.thumb).filter(Boolean),
+    right: lb.movies.map(x => x.thumb).filter(Boolean),
+  })).catch(() => { postersLoaded = false; });
+}
+$('.dust').innerHTML = Array.from({ length: 36 }, () => `<i style="--x:${Math.random() * 100}%;--z:${1 + Math.random() * 2.5}px;--t:${14 + Math.random() * 18}s;--d:${-Math.random() * 30}s;--dx:${(Math.random() - .5) * 140}px"></i>`).join('');
+addEventListener('scroll', progress, { passive: true });
+
+function show(list) {
+  reveal.disconnect();
+  hueWatch.disconnect();
+  stage.innerHTML = list.map(s => `<section class="sec${s.page ? ' page' : ''}" style="--hue:${s.hue || 0}deg">${s.html}</section>`).join('');
+  scrollTo(0, 0);
+  document.body.style.setProperty('--hue', (list[0].hue || 0) + 'deg');
+  stage.querySelectorAll('.r').forEach(el => reveal.observe(el));
+  stage.querySelectorAll('.sec').forEach(el => hueWatch.observe(el));
+  progress();
+}
+function countUp(el) {
+  const to = +el.dataset.count, dec = +el.dataset.dec, t0 = performance.now() + 300, dur = reduce ? 1 : 1600;
+  const fmt = v => v.toLocaleString(LOCALE, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  const step = t => {
+    const p = Math.min(1, Math.max(0, (t - t0) / dur));
+    el.textContent = fmt(to * (1 - (1 - p) ** 3));
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+stage.addEventListener('change', e => { if (e.target.id === 'year') { year = +e.target.value; route(); } });
+
+// ---------- screens ----------
+const loadingLines = ['Rewinding the tape…', 'Counting your couch hours…', 'Bribing Tautulli for data…', 'Estimating your popcorn intake…', 'Judging your watch history… lovingly.'];
+const loading = msg => show([{ hue: 0, html: `<div class="loader r"></div><p class="r muted">${esc(msg)}</p>` }]);
+
+function loginScreen(error = '') {
+  me = null;
+  if (postersLoaded) { postersLoaded = false; fillReels(); }
+  $('#menu').hidden = true;
+  show([{ hue: 0, html: `
+    <p class="kicker r">Your year on Plex</p>
+    <h1 class="logo r">PLEX<br>${glitch}</h1>
+    <p class="r muted" style="max-width:32ch">Sign in to find out exactly how much of your life you donated to the couch.</p>
+    <button class="btn r" id="login">Sign in with Plex</button>
+    <p class="err r" role="alert">${esc(error)}</p>` }]);
+  $('#login').onclick = login;
+}
+
+async function login() {
+  $('#login').disabled = true;
+  try {
+    const p = await api('/api/auth/pin', { method: 'POST' });
+    sessionStorage.setItem('rvLogin', '1');
+    const q = new URLSearchParams({ clientID: p.clientId, code: p.code, forwardUrl: location.origin + location.pathname, 'context[device][product]': 'Plex Re-View' });
+    location.href = 'https://app.plex.tv/auth#?' + q;
+  } catch (e) { loginScreen(e.message); }
+}
+
+async function finishLogin() {
+  loading('Checking in with Plex…');
+  try {
+    for (let i = 0; i < 40; i++) {
+      if ((await api('/api/auth/check', { method: 'POST' })).ok) return route();
+      await sleep(1500);
+    }
+    loginScreen("Plex never got back to us. Try again?");
+  } catch (e) { loginScreen(e.message); }
+  finally { sessionStorage.removeItem('rvLogin'); }
+}
+
+let me = null, year = null;
+const oops = e => show([{ hue: 0, html: `<h2 class="r">Well, that's awkward.</h2><p class="err r">${esc(e.message)}</p><button class="btn r" id="retry">Try again</button>` }]);
+
+// #leaderboard, #admin, #user/<id> (admin viewing someone else's Re-View), anything else = your own Re-View
+async function route() {
+  const [view, arg] = location.hash.slice(1).split('/');
+  loading(pick(loadingLines));
+  try { me ||= await api('/api/me'); } catch (e) { return loginScreen(e.status === 401 ? '' : e.message); }
+  year ||= me.years[0];
+  loadPosters();
+  $('#menu').hidden = false;
+  $('#menu [data-v=admin]').hidden = !me.isAdmin;
+  $('#menu').querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.v === (view === 'user' ? 'admin' : view || '')));
+  const run = ++routeRun, latest = fn => x => run === routeRun && fn(x); // a slower, older route must not draw over a newer one
+  try {
+    if (view === 'leaderboard') return latest(showBoard)(await api('/api/leaderboard?year=' + year));
+    if (view === 'admin') return latest(showAdmin)(await api('/api/admin?year=' + year));
+    if (view === 'data') return latest(showData)(await api('/api/data'));
+    const user = view === 'user' ? '&user=' + encodeURIComponent(arg) : '';
+    const [d] = await Promise.all([api(`/api/wrapped?year=${year}${user}`), sleep(reduce ? 0 : 1200)]);
+    latest(show)(buildSlides(d));
+  } catch (e) { latest(oops)(e); }
+}
+let routeRun = 0;
+addEventListener('hashchange', route);
+
+stage.addEventListener('click', async e => {
+  const t = e.target, id = t.id;
+  if (id === 'sharecard') shareCard(t);
+  if (id === 'replay') scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  if (id === 'retry') route();
+  if (id === 'logout') { await api('/api/logout', { method: 'POST' }); location.hash = ''; loginScreen(); }
+  if (id === 'refresh') { t.disabled = true; await api('/api/admin/refresh', { method: 'POST' }); route(); }
+  if (t.dataset.tab) {
+    stage.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === t));
+    stage.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== t.dataset.tab; });
+  }
+});
+
+// ---------- the funny bits ----------
+const q = {
+  total: h => pick(h < 10 ? ['Barely warmed up the couch. Plex is a little worried about you.', 'A casual viewer? In this economy?']
+    : h < 100 ? ['A respectable hobby. Your couch approves.', 'Solid numbers. Not alarming. Yet.']
+    : h < 300 ? ["That's a part-time job. Unpaid. Totally worth it.", 'Your couch now has a permanent you-shaped dent.']
+    : h < 750 ? ['Your couch has applied for emotional support.', 'Somewhere, a gym membership is quietly crying.']
+    : ['At this point Plex should be paying YOU.', 'The server fans spin in your honour.']),
+  days: f => f > .8 ? 'You basically live here. Rent is due on the 1st.' : f > .4 ? 'Every other day is a Plex day. Balance!' : 'Quality over quantity. Or you have a life. Suspicious.',
+  show: (t, n) => pick([`${n} episodes of ${t}. The cast knows your name now.`, `"Are you still watching ${t}?" Yes. Yes you were.`, `${t} lived rent-free in your head. And on your screen.`]),
+  movie: t => pick([`${t}: the popcorn industry thanks you for your service.`, `${t}. Critics agree you have taste. Well, one critic. You.`]),
+  hour: h => h < 5 ? pick(['Vampires called. They want their schedule back.', 'Nothing good happens after 2 AM. Except this, apparently.'])
+    : h < 11 ? 'Early bird gets the… episode?' : h < 18 ? 'Daytime viewing. Working from home, are we?' : 'Prime time player. A true classic.',
+  month: m => [11, 0, 1].includes(m) ? 'Winter hibernation mode: activated.' : [5, 6, 7].includes(m) ? "Sun's out, blinds down." : `Apparently ${monthName(m)} had nothing better going on.`,
+  binge: h => h > 10 ? "Legend says you're still on that couch." : h > 5 ? '"Just one more episode," you said. Several times.' : 'A modest binge. Such restraint! Who are you?',
+  streak: n => n > 30 ? 'Duolingo wishes it had your commitment.' : n > 7 ? 'Over a week straight. The streak is real.' : 'Short and sweet. Like a mini-series.',
+  yoy: (ch, sofar) => ch > 50 ? 'Somebody discovered the couch this year.' : ch > 10 ? 'Steady growth. The couch-to-human ratio is rising.'
+    : ch >= -10 ? 'Remarkably consistent. A true creature of habit.' : sofar ? "Down so far, but there's still time to catch up. Plenty of time." : 'Did you... go outside? Touch grass? Make friends? Disgusting.',
+  transcode: (pct, device) => pct === 0 ? "Zero transcodes. Your devices are a sysadmin's dream."
+    : pct < 15 ? 'Barely a bead of sweat on the server. Nice gear.'
+    : pct < 50 ? `The server broke a light sweat. ${device ? `Looking at you, ${device}.` : ''}`
+    : 'The server fans spun up every time you pressed play. Maybe a new streaming stick for Christmas?',
+  rank: (r, n) => r === 1 ? "Number one on the server. The admin's power bill salutes you."
+    : r === n && n > 1 ? 'Dead last. Someone has to keep the bandwidth free. Hero.'
+    : r / n <= .25 ? 'Top tier. The server knows you by name.' : 'Plenty of room on the leaderboard. Just saying.',
+};
+
+const bars = (arr, labels) => {
+  const m = Math.max(...arr) || 1;
+  return `<div class="bars r" aria-hidden="true">${arr.map((v, i) =>
+    `<div class="bar${v === m ? ' hi' : ''}"><i style="--h:${(v / m * 100).toFixed(1)}%;--j:${i}"></i><span>${labels[i]}</span></div>`).join('')}</div>`;
+};
+const poster = thumb => thumb ? `<div class="pw r"><img class="poster" src="${img(thumb)}" alt="" onerror="this.remove()"></div>` : '';
+const medal = i => ['🥇', '🥈', '🥉'][i] || i + 1;
+const rows = items => items.length ? `<ol class="list">${items.map((x, i) => `<li class="r${x.me ? ' me' : ''}"><b class="rank">${medal(i)}</b>${x.img
+  ? `<img${x.round ? ' class="round"' : ''} src="${esc(x.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="ph"></span>'}<span class="t">${esc(x.title)}${x.sub ? `<small>${esc(x.sub)}</small>` : ''}</span><span class="v">${x.value}</span>${x.action || ''}</li>`).join('')}</ol>`
+  : '<p class="muted r">Nothing here yet. Suspiciously quiet.</p>';
+const titleRows = (items, sub) => rows(items.map(x => ({ img: x.thumb && img(x.thumb), title: x.title, sub: sub?.(x), value: `${hrs(x.seconds)} h` })));
+const plural = (n, w) => `${n.toLocaleString(LOCALE)} ${w}${n === 1 ? '' : 's'}`;
+const yearPicker = (label = 'Rewind another year') => `<label class="r muted">${label}<select id="year">${me.years.map(y => `<option${y === year ? ' selected' : ''}>${y}</option>`).join('')}</select></label>`;
+const andList = a => a.length > 1 ? `${a.slice(0, -1).join(', ')} and ${a.at(-1)}` : a[0] || '';
+
+// Viewer personality: every trait that fits, most distinctive first.
+function personality(d) {
+  const ph = argmax(d.hours), weekend = (d.weekdays[0] + d.weekdays[6]) / (d.totalSeconds || 1), movieShare = d.movies.seconds / (d.totalSeconds || 1);
+  const traits = [
+    [ph < 5, '🦉', 'The Night Owl', 'You do your best watching while the rest of the world sleeps. Sunlight is just a rumour.'],
+    [d.binge?.seconds >= 8 * 3600, '🍿', 'The Binge Machine', '"Just one more episode" is not a sentence you understand. It\'s a lifestyle.'],
+    [d.shows.count <= 3 && d.shows.plays >= 40, '💍', 'The Loyalist', 'A few shows, a lot of episodes. When you commit, you commit.'],
+    [movieShare >= .6, '🎬', 'The Cinephile', 'Series are for the impatient. You like your stories with a beginning, a middle and end credits.'],
+    [d.streak >= 21, '📅', 'The Daily Ritualist', 'Plex is part of your routine, somewhere between brushing your teeth and more Plex.'],
+    [weekend >= .45, '🛋️', 'The Weekend Warrior', 'Weekdays are for work. Weekends are for the couch, and only the couch.'],
+    [d.shows.count >= 15, '📺', 'The Channel Surfer', 'So many shows, so little commitment. Pilot episodes fear you.'],
+    [d.abandoned >= 5, '🧐', 'The Harsh Critic', 'Life is too short for bad movies, and you have proven it. Repeatedly.'],
+  ].filter(t => t[0]).map(([, ico, name, text]) => ({ ico, name, text }));
+  return traits.length ? traits : [{ ico: '☕', name: 'The Casual Connoisseur', text: 'A little of this, a little of that. Perfectly balanced, as all things should be.' }];
+}
+
+const pageHead = (kicker, title, picker = true) => `<header class="phead r"><div><p class="kicker">${kicker}</p><h1 class="logo">${title}</h1></div>${picker ? yearPicker('Year') : ''}</header>`;
+
+function showBoard(lb) {
+  const tab = (id, label, on) => `<button class="tab${on ? ' on' : ''}" data-tab="${id}">${label}</button>`;
+  const shame = lb.viewers.filter(v => v.plays >= 5).map(v => ({ ...v, pct: v.transcodes / v.plays })).sort((a, b) => b.pct - a.pct);
+  show([{ hue: 260, page: true, html: `
+    ${pageHead(`${esc(me.server)} · ${year}`, 'Leader<span class="hl">board</span>')}
+    <p class="quip r">${pick(['Bragging rights, officially quantified.', 'Friendly competition. Emphasis on competition.', 'Touching grass is not a ranked category.'])}</p>
+    <div class="tabs r">${tab('viewers', 'Viewers', true)}${tab('shows', 'Top 25 shows')}${tab('movies', 'Top 25 movies')}${tab('shame', 'Transcode shame')}</div>
+    <div data-panel="viewers">${rows(lb.viewers.map(v => ({ img: v.thumb, round: true, me: v.id === me.id, title: v.name + (v.id === me.id ? ' (you)' : ''),
+      sub: [v.topShow && `Top show: ${v.topShow}`, v.topMovie && `Top movie: ${v.topMovie}`].filter(Boolean).join(' · ') || plural(v.plays, 'play'), value: `${hrs(v.seconds)} h` })))}</div>
+    <div data-panel="shows" hidden>${titleRows(lb.shows, s => `${plural(s.viewers, 'viewer')} · ${plural(s.plays, 'episode')}`)}</div>
+    <div data-panel="movies" hidden>${titleRows(lb.movies, m => `${plural(m.viewers, 'viewer')} · ${plural(m.plays, 'play')}`)}</div>
+    <div data-panel="shame" hidden><p class="muted r">Plays where the server had to convert the video on the fly because the device couldn't handle the original file. Biggest server-sweaters first (5+ plays only).</p>
+      ${rows(shame.map(v => ({ img: v.thumb, round: true, me: v.id === me.id, title: v.name + (v.id === me.id ? ' (you)' : ''), sub: `${v.transcodes.toLocaleString(LOCALE)} of ${plural(v.plays, 'play')} transcoded`, value: `${Math.round(v.pct * 100)}%` })))}</div>` }]);
+}
+
+// Decimal units like Plex and your ISP use: 1 GB = 1,000 MB.
+const UNITS = ['MB', 'GB', 'TB', 'PB'];
+const inUnit = (b, i) => b / 1e6 / 1000 ** i;
+const unitOf = b => Math.max(0, UNITS.findLastIndex((_, i) => inUnit(b, i) >= 1));
+const bigBytes = b => { const i = unitOf(b); return `${count(+inUnit(b, i).toFixed(1))}<small>${UNITS[i]}</small>`; };
+const fmtBytes = b => { const i = unitOf(b); return `${(+inUnit(b, i).toFixed(1)).toLocaleString(LOCALE)} ${UNITS[i]}`; };
+const allUnits = b => `<div class="units">${UNITS.map((u, i) => `<span>${inUnit(b, i).toLocaleString(LOCALE, { maximumSignificantDigits: 4 })} ${u}</span>`).join('')}</div>`;
+const num = n => n >= 100 ? Math.round(n).toLocaleString(LOCALE) : n.toLocaleString(LOCALE, { maximumSignificantDigits: 3 });
+
+function dataFacts(b) {
+  const floppies = b / 1.44e6, songs = b / 4e6;
+  return [
+    ['💾', num(floppies), `floppy disks. Stacked up that's ${num(floppies * 3.3e-6)} km of plastic.`],
+    ['💿', num(b / 4.7e9), 'DVDs. Your shelves are relieved this was streamed.'],
+    ['📀', num(b / 25e9), 'Blu-ray discs, if you prefer your nostalgia in HD.'],
+    ['📞', num(b * 8 / 56e3 / 31557600), 'years to download it all over a 56k dial-up modem. Beeeeep-krrrrr.'],
+    ['📱', num(b / 128e9), 'phones with 128 GB, filled to the brim. "Storage almost full."'],
+    ['🎵', num(songs * 3.5 / 60 / 24 / 365), `years of non-stop music, at about 4 MB per song (${num(songs)} songs).`],
+    ['🍿', num(b / 4e9), 'full-HD movies at roughly 4 GB each. Popcorn not included.'],
+    ['📡', num(b / 1e9 / 1.5), 'months of a typical 1.5 GB-a-month phone plan. Your ISP sends its regards.'],
+  ];
+}
+
+function serverRecords(rec) {
+  return rec ? [
+    rec.longest && ['⏱️', `${hrs(rec.longest.seconds)} h`, `Longest single session: ${esc(rec.longest.name)} watched ${esc(rec.longest.title)} in one go${rec.longest.at ? ` (${fmtTs(rec.longest.at)})` : ''}. Hydrate, please.`],
+    rec.peak && ['👥', rec.peak.streams, `people watching at the same time on ${fmtDay(rec.peak.date)}. The server's busiest moment.`],
+    rec.totalPlays != null && ['▶️', num(rec.totalPlays), 'plays all-time. Every single press of play, counted.'],
+    rec.added && ['🆕', num(rec.added.movies), `new movies added in ${rec.added.year}, plus ${num(rec.added.shows)} new shows and ${num(rec.added.episodes)} new episodes. The library keeps growing.`],
+  ].filter(Boolean) : [];
+}
+
+function showData({ bandwidth: d, bandwidthError, records: rec }) {
+  const max = d ? Math.max(...d.years.map(y => y.bytes), 0) : 0;
+  const since = d?.since ? new Date(d.since * 1000).toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }) : '';
+  const facts = (list, title, intro = '') => list.length ? `<h2 class="sub r">${title}</h2>${intro}<div class="facts">${list.map(([ico, n, text]) => `<div class="fact r"><div class="ico">${ico}</div><b>${n}</b><p>${text}</p></div>`).join('')}</div>` : '';
+  show([{ hue: 300, page: true, html: `
+    ${pageHead(`${esc(me.server)} · all time`, 'Data <span class="hl">streamed</span>', false)}
+    <p class="quip r">${pick(['Every byte that left the house. Your router has been through a lot.', 'Bandwidth: the only thing streamed faster than excuses to skip the gym.', 'Somewhere, an ISP engineer is staring at this graph.'])}</p>
+    ${!d ? `<p class="muted r">${esc(bandwidthError || 'No streamed-data stats available.')}</p>` : d.bytes ? `
+    <div class="databox r"><p class="kicker">Total streamed outside your home${since ? ` since ${since}` : ''}</p>
+      <div class="num">${bigBytes(d.bytes)}</div>${allUnits(d.bytes)}</div>
+    <h2 class="sub r">Per year</h2>
+    ${d.years.length > 1 ? bars([...d.years].reverse().map(y => y.bytes), [...d.years].reverse().map(y => y.year)) : ''}
+    <div class="cards">${d.years.map(y => `<div class="card r${y.bytes === max ? ' top' : ''}"><span>${y.year}${y.bytes === max && d.years.length > 1 ? ' · busiest' : ''}</span><b>${bigBytes(y.bytes)}</b><small>${num(y.bytes / 4.7e9)} DVDs</small></div>`).join('')}</div>
+    ${facts(dataFacts(d.bytes), 'Fun facts', '<p class="muted r">All of that data, put in perspective:</p>')}`
+    : '<p class="muted r">Plex has no remote streaming stats yet. Everyone is watching from the couch at home, apparently.</p>'}
+    ${facts(serverRecords(rec), 'Server records')}` }]);
+}
+
+function showAdmin(a) {
+  const active = a.viewers.filter(v => v.plays).length;
+  show([{ hue: 190, page: true, html: `
+    ${pageHead(`Admin console · ${esc(me.server)}`, 'Mission <span class="hl">control</span>')}
+    <div class="cards">
+      <div class="card r"><b>${count(hrs(a.seconds))}</b><span>Hours streamed</span></div>
+      <div class="card r"><b>${count(a.plays)}</b><span>Plays</span></div>
+      <div class="card r"><b>${active}/${a.totalUsers}</b><span>Active viewers</span></div>
+      <div class="card r"><b>${count(active ? hrs(a.seconds / active) : 0)}</b><span>Hours per viewer</span></div>
+    </div>
+    <h2 class="sub r">Watch time per month</h2>${bars(a.months, a.months.map((_, i) => monthName(i, 'narrow')))}
+    <h2 class="sub r">Devices</h2>${rows(a.platforms.map(p => ({ title: p.title, sub: plural(p.plays, 'play'), value: `${hrs(p.seconds)} h` })))}
+    <h2 class="sub r">All users</h2>${rows(a.viewers.map(v => ({ img: v.thumb, round: true, me: v.id === me.id, title: v.name,
+      sub: v.plays ? plural(v.plays, 'play') : 'Zero plays. Ghost account?', value: `${hrs(v.seconds)} h`,
+      action: v.plays ? `<a class="btn ghost mini" href="#user/${encodeURIComponent(v.id)}">View</a>` : '' })))}
+    <div class="btns r"><button class="btn ghost" id="refresh">Refresh data from Tautulli</button></div>
+    <p class="muted r">Data is cached for 10 minutes. Admins are Tautulli's server owner plus anyone in ADMIN_USERS.</p>` }]);
+}
+
+let lastStory = null;
+const fit = (x, s, max) => { while (s.length > 1 && x.measureText(s).width > max) s = s.slice(0, -2) + '…'; return s; };
+
+// Draws a 1080x1920 (phone story size) summary image and shares or downloads it.
+async function shareCard(btn) {
+  const { d, persona } = lastStory;
+  btn.disabled = true;
+  try {
+    await Promise.all([document.fonts.load('900 100px Orbitron'), document.fonts.load('700 40px "Space Grotesk"')]);
+    const W = 1080, H = 1920, c = Object.assign(document.createElement('canvas'), { width: W, height: H }), x = c.getContext('2d');
+    let g = x.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#10122a'); g.addColorStop(1, '#05060d');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    g = x.createRadialGradient(W / 2, 0, 0, W / 2, 0, 1000);
+    g.addColorStop(0, 'rgba(34,227,255,.45)'); g.addColorStop(.5, 'rgba(255,43,214,.15)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    for (const sx of [0, W - 80]) { // film strips
+      x.fillStyle = '#121320'; x.fillRect(sx, 0, 80, H);
+      x.fillStyle = '#05060d';
+      for (let y = 12; y < H; y += 44) { x.fillRect(sx + 10, y, 14, 24); x.fillRect(sx + 56, y, 14, 24); }
+    }
+    const text = (str, y, font, color) => { x.font = font; x.fillStyle = color; x.textAlign = 'center'; x.fillText(fit(x, String(str), W - 220), W / 2, y); };
+    text(`${me.server} presents`.toUpperCase(), 150, '700 30px Orbitron', '#22e3ff');
+    text('PLEX', 270, '900 110px Orbitron', '#eef0ff');
+    text('RE-VIEW', 385, '900 110px Orbitron', '#e5a00d');
+    x.font = '900 190px Orbitron'; x.strokeStyle = '#22e3ff'; x.lineWidth = 4; x.strokeText(String(d.year), W / 2, 590);
+    text(d.user.name, 670, '700 46px "Space Grotesk"', '#eef0ff');
+    let y = 720;
+    const fav = d.shows.top[0] || d.movies.top[0];
+    if (fav?.thumb) {
+      const im = new Image();
+      im.src = img(fav.thumb);
+      try {
+        await im.decode();
+        x.save(); x.beginPath(); x.roundRect(W / 2 - 150, y, 300, 450, 18); x.clip(); x.drawImage(im, W / 2 - 150, y, 300, 450); x.restore();
+        y += 450;
+      } catch { /* no poster, no problem */ }
+    }
+    if (fav) text(`#1 ${fav === d.shows.top[0] ? 'show' : 'movie'}: ${fav.title}`, y + 70, '700 40px "Space Grotesk"', '#e5a00d');
+    const y0 = y + 120;
+    [[hrs(d.totalSeconds).toLocaleString(LOCALE), 'HOURS'], [d.plays.toLocaleString(LOCALE), 'PLAYS'], [d.streak, 'DAY STREAK'], ['#' + d.server.rank, 'ON SERVER']].forEach(([v, label], i) => {
+      const bx = i % 2 ? W / 2 + 15 : W / 2 - 415, by = y0 + Math.floor(i / 2) * 190;
+      x.fillStyle = 'rgba(255,255,255,.06)'; x.strokeStyle = 'rgba(255,255,255,.15)'; x.lineWidth = 2;
+      x.beginPath(); x.roundRect(bx, by, 400, 170, 22); x.fill(); x.stroke();
+      x.textAlign = 'center';
+      x.font = '900 64px Orbitron'; x.fillStyle = '#eef0ff'; x.fillText(String(v), bx + 200, by + 95);
+      x.font = '500 26px "Space Grotesk"'; x.fillStyle = '#959bc8'; x.fillText(label, bx + 200, by + 140);
+    });
+    text(`${persona.ico} ${persona.name}`, y0 + 450, '700 50px "Space Grotesk"', '#eef0ff');
+    text('PLEX RE-VIEW', H - 60, '700 26px Orbitron', '#959bc8');
+
+    const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+    const file = new File([blob], `plex-re-view-${d.year}.png`, { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'My Plex Re-View' }).catch(() => {});
+    } else {
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: file.name });
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10e3);
+    }
+  } finally { btn.disabled = false; }
+}
+
+function buildSlides(d) {
+  const who = d.user;
+  const S = [], add = (hue, html) => S.push({ hue, html });
+  add(0, `
+    ${who.thumb ? `<img class="avatar r" src="${esc(who.thumb)}" alt="">` : ''}
+    <p class="kicker r">${esc(me.server)} presents</p>
+    <h1 class="logo r">PLEX ${glitch}</h1>
+    <div class="year r">${d.year}</div>
+    <p class="r">Hey <b>${esc(who.name)}</b>. Let's find out what you've been doing on that couch.</p>
+    <p class="hint r">Scroll down <span class="bob">↓</span></p>`);
+
+  if (!d.plays) {
+    add(320, `<p class="kicker r">Total watch time</p><div class="num r">0<small>hours</small></div>
+      <p class="quip r">Zero plays in ${d.year}. Either you touched grass or you're secretly on someone else's account. We won't judge. Much.</p>
+      ${yearPicker()}<div class="btns r"><button class="btn ghost" id="logout">Log out</button></div>`);
+    return S;
+  }
+
+  const h = d.totalSeconds / 3600;
+  add(40, `<p class="kicker r">Total watch time</p>
+    <div class="num r">${count(hrs(d.totalSeconds))}<small>hours</small></div>
+    <p class="r">That's <b>${(h / 24).toFixed(1)} days</b> of non-stop screen time across <b>${d.plays.toLocaleString(LOCALE)}</b> plays.</p>
+    <p class="quip r">${q.total(h)}</p>`);
+
+  const elapsed = Math.ceil((Math.min(Date.now(), new Date(d.year + 1, 0, 1)) - new Date(d.year, 0, 1)) / 864e5);
+  const cards = [['Episodes', d.shows.plays], ['Shows', d.shows.count], ['Movies', d.movies.plays]].filter(c => c[1]);
+  add(80, `<p class="kicker r">The breakdown</p>
+    <h2 class="r">You pressed play on <span class="hl">${d.activeDays}</span> of ${elapsed} days</h2>
+    <div class="cards">${cards.map(([l, v]) => `<div class="card r"><b>${count(v)}</b><span>${l}</span></div>`).join('')}</div>
+    <p class="quip r">${q.days(d.activeDays / elapsed)}</p>`);
+
+  const pv = d.previous;
+  if (pv) {
+    const ch = Math.round((d.totalSeconds / pv.totalSeconds - 1) * 100), now = d.shows.top[0]?.title;
+    const until = pv.samePeriod ? ` (1 Jan to ${new Date().toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' })})` : '';
+    add(70, `<p class="kicker r">${pv.year} vs. ${d.year}</p>
+      <div class="num r">${ch >= 0 ? '+' : '−'}${count(Math.abs(ch))}<small>% watch time</small></div>
+      ${until ? `<p class="r muted">Same period both years${until}</p>` : ''}
+      <div class="cards"><div class="card r"><span>${pv.year}</span><b>${count(hrs(pv.totalSeconds))}<small>h</small></b><small>${plural(pv.plays, 'play')}</small></div>
+        <div class="card r"><span>${d.year}</span><b>${count(hrs(d.totalSeconds))}<small>h</small></b><small>${plural(d.plays, 'play')}</small></div></div>
+      ${pv.topShow && now ? `<p class="r">${pv.topShow === now ? `Still loyal to <b>${esc(now)}</b>, your #1 show two years running.` : `You swapped <b>${esc(pv.topShow)}</b> for <b>${esc(now)}</b> as your #1 show.`}</p>` : ''}
+      <p class="quip r">${q.yoy(ch, pv.samePeriod)}</p>`);
+  }
+
+  const s = d.shows.top[0];
+  if (s) {
+    add(160, `<p class="kicker r">Your #1 show</p>${poster(s.thumb)}<h2 class="r">${esc(s.title)}</h2>
+      <p class="r muted"><b>${hrs(s.seconds)}</b> hours · <b>${s.plays}</b> episodes</p><p class="quip r">${q.show(esc(s.title), s.plays)}</p>`);
+    if (d.shows.top.length > 1) add(180, `<p class="kicker r">Top shows</p><h2 class="r">The usual suspects</h2>${titleRows(d.shows.top)}`);
+  }
+  const m = d.movies.top[0];
+  if (m) {
+    add(220, `<p class="kicker r">Your #1 movie</p>${poster(m.thumb)}<h2 class="r">${esc(m.title)}${m.year ? ` <span class="muted">(${m.year})</span>` : ''}</h2>
+      <p class="r muted">${m.plays > 1 ? `Watched <b>${m.plays}</b> times` : `<b>${hrs(m.seconds)}</b> hours of pure cinema`}</p><p class="quip r">${q.movie(esc(m.title))}</p>`);
+    if (d.movies.top.length > 1) add(240, `<p class="kicker r">Top movies</p><h2 class="r">Now showing: your faves</h2>${titleRows(d.movies.top)}`);
+  }
+
+  const ph = argmax(d.hours), pd = argmax(d.weekdays);
+  add(300, `<p class="kicker r">Your daily rhythm</p><h2 class="r">Peak hour: <span class="hl">${String(ph).padStart(2, '0')}:00</span></h2>
+    ${bars(d.hours, d.hours.map((_, i) => i % 6 ? '' : i))}
+    <p class="r">Favourite day: <b>${dayName(pd)}</b></p><p class="quip r">${q.hour(ph)}</p>`);
+
+  const pm = argmax(d.months);
+  add(330, `<p class="kicker r">Seasonal forecast</p><h2 class="r"><span class="hl">${monthName(pm)}</span> was your month</h2>
+    ${bars(d.months, d.months.map((_, i) => monthName(i, 'narrow')))}<p class="quip r">${q.month(pm)}</p>`);
+
+  if (d.binge) add(10, `<p class="kicker r">Biggest binge</p><h2 class="r">${fmtDay(d.binge.day)}</h2>
+    <div class="num r">${count(hrs(d.binge.seconds))}<small>hours in one day</small></div>
+    ${d.binge.top ? `<p class="r">Mostly <b>${esc(d.binge.top.title)}</b></p>` : ''}<p class="quip r">${q.binge(d.binge.seconds / 3600)}</p>`);
+
+  if (d.streak > 1) add(140, `<p class="kicker r">Longest streak</p><div class="num r">${count(d.streak)}<small>days in a row</small></div>
+    <p class="r muted">Ending ${fmtDay(d.streakEnd)}</p><p class="quip r">${q.streak(d.streak)}</p>`);
+
+  add(120, `<p class="kicker r">Bookends</p><h2 class="r">How it started vs. how it's going</h2><div class="cards">
+    <div class="card r"><span>First play of ${d.year}</span><p>${esc(d.first.title)}</p><small>${fmtTs(d.first.at)}</small></div>
+    <div class="card r"><span>Most recent</span><p>${esc(d.last.title)}</p><small>${fmtTs(d.last.at)}</small></div></div>
+    <p class="quip r">${pick(['New year, same couch.', 'From the first frame to the latest credits. Character development.'])}</p>`);
+
+  const p = d.platforms[0];
+  if (p) add(190, `<p class="kicker r">Trusty sidekick</p><h2 class="r"><span class="hl">${esc(p.title)}</span></h2>
+    <p class="r"><b>${Math.round(p.seconds / d.totalSeconds * 100)}%</b> of your watch time${d.platforms[1] ? `, with ${d.platforms.slice(1).map(x => `<b>${esc(x.title)}</b>`).join(' and ')} on the bench` : ''}.</p>
+    <p class="quip r">${pick([`${esc(p.title)} did the heavy lifting. Give it a raise.`, `You and ${esc(p.title)}: name a more iconic duo.`])}</p>`);
+
+  const tp = Math.round(d.transcodes / d.plays * 100);
+  add(30, `<p class="kicker r">Transcode shame</p><div class="num r">${count(tp)}<small>% of plays transcoded</small></div>
+    <p class="r muted" style="max-width:40ch">${d.transcodes.toLocaleString(LOCALE)} of your ${plural(d.plays, 'play')} made the server convert the video on the fly, because your device couldn't handle the original file.</p>
+    <p class="quip r">${q.transcode(tp, p && esc(p.title))}</p>`);
+
+  if (d.abandoned) add(260, `<p class="kicker r">The graveyard</p><div class="num r">${count(d.abandoned)}<small>movies quit before halfway</small></div>
+    <p class="quip r">${pick(['Life is too short for bad movies. Respect.', 'Commitment issues? Only with films, surely.'])}</p>`);
+
+  const sv = d.server, share = sv.seconds ? d.totalSeconds / sv.seconds * 100 : 0;
+  add(45, `<p class="kicker r">Server leaderboard</p><div class="num r">#${count(sv.rank)}<small>of ${sv.users} viewers</small></div>
+    <p class="r">You account for <b>${share.toFixed(1)}%</b> of everything watched on ${esc(me.server)}.</p><p class="quip r">${q.rank(sv.rank, sv.users)}</p>`);
+
+  const tw = d.twin;
+  if (tw) add(320, `<p class="kicker r">Your taste twin</p>${tw.thumb ? `<img class="avatar r" src="${esc(tw.thumb)}" alt="">` : ''}
+    <h2 class="r"><span class="hl">${esc(tw.name)}</span></h2><div class="num r">${count(tw.match)}<small>% taste match</small></div>
+    <p class="r">You both can't get enough of ${andList(tw.shared.map(t => `<b>${esc(t)}</b>`))}.</p>
+    <p class="quip r">${pick([`Movie night at ${esc(tw.name)}'s place?`, 'Separated at birth, reunited by Plex.', 'Same taste, same couch energy.'])}</p>`);
+
+  const [persona, ...more] = personality(d);
+  add(280, `<p class="kicker r">Your viewer personality</p><div class="persona r"><span>${persona.ico}</span></div>
+    <h2 class="r"><span class="hl">${persona.name}</span></h2><p class="r" style="max-width:38ch">${persona.text}</p>
+    ${more.length ? `<p class="r muted">Also a bit of: ${more.map(t => `${t.ico} ${t.name}`).join(' · ')}</p>` : ''}`);
+  lastStory = { d, persona };
+
+  const rows = [['Personality', `${persona.ico} ${persona.name}`], ['Top show', s?.title], ['Top movie', m?.title], ['Taste twin', tw?.name], ['Peak hour', `${String(ph).padStart(2, '0')}:00`], ['Sidekick', p?.title]].filter(r => r[1]);
+  add(0, `<p class="kicker r">${esc(who.name)} · ${d.year}</p><h1 class="logo r" style="font-size:clamp(1.6rem,7vw,2.6rem)">PLEX ${glitch}</h1>
+    <div class="summary r"><div class="cards">
+      <div class="card"><b>${count(hrs(d.totalSeconds))}</b><span>Hours</span></div><div class="card"><b>${count(d.plays)}</b><span>Plays</span></div>
+      <div class="card"><b>${count(d.streak)}</b><span>Day streak</span></div><div class="card"><b>#${sv.rank}</b><span>On server</span></div></div>
+      ${rows.map(([k, v]) => `<div class="row"><span class="muted">${k}</span><span>${esc(v)}</span></div>`).join('')}</div>
+    <div class="btns r"><button class="btn" id="sharecard">Save my card 📸</button><button class="btn ghost" id="replay">Back to top ↑</button><a class="btn ghost" href="#leaderboard">Leaderboard</a><a class="btn ghost" href="#data">Data</a><button class="btn ghost" id="logout">Log out</button></div>
+    ${yearPicker()}<p class="quip r">See you next year. Same couch, probably.</p>`);
+  return S;
+}
+
+sessionStorage.getItem('rvLogin') ? finishLogin() : route();
+</script>
+</body>
+</html>

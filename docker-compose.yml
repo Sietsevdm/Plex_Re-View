@@ -1,0 +1,17 @@
+services:
+  plex-review:
+    build: .
+    image: plex-review:latest
+    container_name: plex-review
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      # Set these in Portainer (Stack > Environment variables) or in a .env file next to this one. See .env.example.
+      TAUTULLI_URL: ${TAUTULLI_URL:?Set TAUTULLI_URL}
+      TAUTULLI_API_KEY: ${TAUTULLI_API_KEY:?Set TAUTULLI_API_KEY}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET to a long random string}
+      TZ: ${TZ:-Europe/Amsterdam}
+      PLEX_URL: ${PLEX_URL:-}
+      PLEX_TOKEN: ${PLEX_TOKEN:-}
+      ADMIN_USERS: ${ADMIN_USERS:-}
