@@ -45,7 +45,7 @@ for (const year of [2025, 2026]) {
     const r = rnd();
     if (r < .62) {
       const s = any(shows);
-      rows.push({ ...base, media_type: 'episode', duration: 1500 + Math.floor(rnd() * 2400), grandparent_title: s, grandparent_rating_key: s, grandparent_thumb: thumb(s), full_title: `${s} - S0${1 + Math.floor(rnd() * 4)}E0${1 + Math.floor(rnd() * 9)}` });
+      rows.push({ ...base, media_type: 'episode', duration: 1500 + Math.floor(rnd() * 2400), grandparent_title: s, grandparent_rating_key: titles.indexOf(s) /* like real Tautulli: no grandparent_thumb */, full_title: `${s} - S0${1 + Math.floor(rnd() * 4)}E0${1 + Math.floor(rnd() * 9)}` });
     } else {
       const m = any(movies);
       rows.push({ ...base, media_type: 'movie', duration: 5400 + Math.floor(rnd() * 3600), title: m, full_title: m, rating_key: m, thumb: thumb(m), year: 2000 + Math.floor(rnd() * 25), percent_complete: rnd() < .08 ? 25 : 100 });

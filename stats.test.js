@@ -71,3 +71,10 @@ test('taste twin and transcodes', () => {
   assert.equal(buildWrapped(rows, '2', 2025).twin, null); // user 2 only played a track: nothing to compare
   assert.equal(buildLeaderboard(twinRows, 2025).viewers.find(v => v.id === '1').transcodes, 1);
 });
+
+test('show posters come from the show, not the season', () => {
+  const ep = { user_id: 1, started: t('2025-02-01T20:00'), duration: 60, media_type: 'episode', grandparent_title: 'S', grandparent_rating_key: 4321, thumb: '/library/metadata/999/thumb/1' };
+  assert.equal(buildWrapped([ep], '1', 2025).shows.top[0].thumb, '/library/metadata/4321/thumb'); // real Tautulli: no grandparent_thumb
+  assert.equal(buildWrapped([{ ...ep, grandparent_thumb: '/x/thumb' }], '1', 2025).shows.top[0].thumb, '/x/thumb');
+  assert.equal(buildWrapped([{ ...ep, grandparent_rating_key: undefined }], '1', 2025).shows.top[0].thumb, '/library/metadata/999/thumb/1');
+});

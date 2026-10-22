@@ -6,7 +6,10 @@ const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate
 const dayNum = k => { const [y, m, d] = k.split('-').map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
 const sum = rows => rows.reduce((s, r) => s + secs(r), 0);
 
-const grand = r => ({ key: r.grandparent_rating_key || r.grandparent_title, title: r.grandparent_title, thumb: r.grandparent_thumb });
+// Tautulli's history has no grandparent_thumb (an episode's "thumb" is its season poster), so the show poster
+// is addressed by the show's rating key; Plex serves /library/metadata/<key>/thumb as the current poster.
+const showThumb = r => r.grandparent_thumb || (/^\d+$/.test(r.grandparent_rating_key) ? `/library/metadata/${r.grandparent_rating_key}/thumb` : r.thumb);
+const grand = r => ({ key: r.grandparent_rating_key || r.grandparent_title, title: r.grandparent_title, thumb: showThumb(r) });
 const movie = r => ({ key: r.rating_key || r.title, title: r.title, thumb: r.thumb, year: r.year });
 
 function top(rows, keyFn, n = 5) {
