@@ -229,10 +229,24 @@ let postersLoaded = false;
 function loadPosters() { // only after sign-in: posters go through the authenticated image proxy
   if (postersLoaded) return;
   postersLoaded = true;
-  api('/api/leaderboard?year=' + year).then(lb => fillReels({
-    left: lb.shows.map(x => x.thumb).filter(Boolean),
-    right: lb.movies.map(x => x.thumb).filter(Boolean),
+  api('/api/leaderboard?year=' + year).then(async lb => fillReels({
+    left: await loadable(lb.shows.map(x => x.thumb).filter(Boolean)),
+    right: await loadable(lb.movies.map(x => x.thumb).filter(Boolean)),
   })).catch(() => { postersLoaded = false; });
+}
+// Keeps only posters that actually load: titles removed from Plex after watching have no artwork any more.
+// Checked a few at a time so Tautulli isn't flooded; stops once there are enough for a full reel.
+async function loadable(thumbs) {
+  const ok = [];
+  for (let i = 0; i < thumbs.length && ok.length < FRAMES; i += 6) {
+    const batch = await Promise.all(thumbs.slice(i, i + 6).map(t => {
+      const im = new Image();
+      im.src = img(t);
+      return im.decode().then(() => t, () => null);
+    }));
+    ok.push(...batch.filter(Boolean));
+  }
+  return ok;
 }
 $('.dust').innerHTML = Array.from({ length: 36 }, () => `<i style="--x:${Math.random() * 100}%;--z:${1 + Math.random() * 2.5}px;--t:${14 + Math.random() * 18}s;--d:${-Math.random() * 30}s;--dx:${(Math.random() - .5) * 140}px"></i>`).join('');
 addEventListener('scroll', progress, { passive: true });
