@@ -13,7 +13,10 @@ if (!process.env.SESSION_SECRET) console.warn('SESSION_SECRET not set: everyone 
 const CLIENT_ID = 'plex-re-view-' + crypto.createHash('sha256').update('client' + SECRET).digest('hex').slice(0, 16);
 const PLEX_HEADERS = { Accept: 'application/json', 'X-Plex-Product': 'Plex Re-View', 'X-Plex-Client-Identifier': CLIENT_ID };
 const INDEX = readFileSync(new URL('./public/index.html', import.meta.url));
-const LOGO = readFileSync(new URL('./public/logo.svg', import.meta.url));
+const FILES = { // small static files: path -> [bytes, type]
+  '/logo.svg': [readFileSync(new URL('./public/logo.svg', import.meta.url)), 'image/svg+xml'],
+  '/favicon.png': [readFileSync(new URL('./public/favicon.png', import.meta.url)), 'image/png'],
+};
 
 const httpErr = (status, message) => Object.assign(new Error(message), { status });
 
@@ -228,9 +231,10 @@ http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(INDEX);
     }
-    if (req.method === 'GET' && url.pathname === '/logo.svg') {
-      res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
-      return res.end(LOGO);
+    const file = req.method === 'GET' && FILES[url.pathname];
+    if (file) {
+      res.writeHead(200, { 'Content-Type': file[1], 'Cache-Control': 'public, max-age=86400' });
+      return res.end(file[0]);
     }
     const route = routes[`${req.method} ${url.pathname}`];
     if (!route) throw httpErr(404, 'Not found');
