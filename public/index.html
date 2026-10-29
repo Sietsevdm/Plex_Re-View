@@ -44,8 +44,9 @@ b{color:var(--fg)}
 .seats.back{bottom:54px;height:44px;background-size:83px 44px;filter:brightness(.6)}
 .seats.front{height:72px;background-size:135px 72px;background-position:67px 0}
 /* seats sit in front of the page, so content scrolls up from behind them */
-.front{position:fixed;inset:auto 0 0;height:98px;z-index:3;pointer-events:none}
-.front::before{content:"";position:absolute;inset:-56px 0 auto;height:56px;background:linear-gradient(transparent,var(--bg))} /* ends where the back row begins */
+.seatbank{position:fixed;inset:auto 0 0;height:98px;z-index:3;pointer-events:none}
+.seatbank::before{content:"";position:absolute;inset:-56px 0 0;background:linear-gradient(transparent,var(--bg) 56px)} /* behind the seats: hides content in the gaps */
+.seatbank::after{content:"";position:absolute;inset:-56px 0 0;background:linear-gradient(transparent,rgba(5,6,13,.15) 56px,rgba(5,6,13,.55))} /* over the seats: both rows fade into the dark */
 .aisle{position:absolute;inset:auto 0 54px;height:6px;background:radial-gradient(circle,#ffb547 0 1.5px,transparent 2.5px) 0 50%/44px 6px repeat-x;filter:drop-shadow(0 0 4px #ffb547);animation:flicker 9s steps(1) infinite}
 .grain{position:absolute;inset:-50%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.07;animation:grain .9s steps(5) infinite}
 @keyframes grain{20%{transform:translate(-5%,3%)}40%{transform:translate(4%,-6%)}60%{transform:translate(-3%,5%)}80%{transform:translate(6%,2%)}}
@@ -176,7 +177,7 @@ h2.sub{font-size:.85rem;letter-spacing:.25em;text-transform:uppercase;color:var(
   <div class="grain"></div><div class="scratch"></div><div class="vig"></div>
 </div>
 <div id="prog" aria-hidden="true"></div>
-<div class="front" aria-hidden="true"><div class="seats back"></div><div class="aisle"></div><div class="seats front"></div></div>
+<div class="seatbank" aria-hidden="true"><div class="seats back"></div><div class="aisle"></div><div class="seats front"></div></div>
 <main id="stage" aria-live="polite"></main>
 <nav id="menu" hidden><a href="#" data-v="">My Re-View</a><a href="#leaderboard" data-v="leaderboard">Leaderboard</a><a href="#data" data-v="data">Data</a><a href="#admin" data-v="admin" hidden>Admin</a></nav>
 <script>
